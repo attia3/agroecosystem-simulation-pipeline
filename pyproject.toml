@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agroecosystem-simulation-pipeline"
+version = "0.1.0"
+description = "Reusable scientific utilities for spatial agroecosystem simulation workflows"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+authors = [{name = "Ahmed Attia"}]
+keywords = ["agroecosystem", "crop-models", "climate", "soil-carbon", "scientific-workflows"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
