@@ -1,88 +1,67 @@
-# dssat-py-batchrunner
-A Python wrapper / batch-runner for executing DSSAT (CSM) simulations at scale, designed for gridded, multi-scenario workflows (climate ensembles, RCPs, rotations), with automated weather preparation and output post-processing.
-# Cite 
-Attia, A., Woli, P., Long, C.R., Rouquette, F.M. Jr, Smith, G.R., Datta, A., Feike., T., Rajan, N. 2025. Unlocking climate resilience by exploring the mitigation potential of improved rotation with cover cropping. J. of Environ. Manage. 391-126352. doi.org/10.1016/j.jenvman.2025.126352 
-Attia, A., Woli, P., Long, C.R., Rouquette, F.M. Jr, Smith, G.R., Ibrahim, A.M.H. 2025. Mapping spatial zones of climate vulnerability and adaptive potential for major crops in the Texas High Plains. In Review- Model. Earth Syst. Env. doi.org/10.21203/rs.3.rs-6864209/v1
-# dssat-py-batchrunner
+# DSSAT Spatial Simulation Pipeline
 
-A Python wrapper / batch-runner for executing DSSAT (CSM) simulations at scale, designed for gridded, multi-scenario workflows (climate ensembles, RCPs, rotations), with automated weather preparation and output post-processing.
+**Research workflow and reproducibility reference** for running DSSAT cropping-system simulations over multiple locations, climate scenarios, and crop rotations.
 
-> **Portfolio / showcase repository**
-> This repository documents the pipeline and demonstrates the implementation approach used in a peer-reviewed study.  
-> Full runnable assets (DSSAT binaries, proprietary inputs, large climate datasets, and institution-specific file paths) are not distributed here due to licensing and data-size constraints.
+**Status:** Published research code / portfolio showcase; **not yet a turnkey, fully tested Python package**. The files currently demonstrate core processing stages but rely on local DSSAT installations, external datasets, and machine-specific paths. Work to make them configurable and testable is tracked in [the development roadmap](docs/ROADMAP.md).
 
-## What this project does
+## Why this project matters
 
-- **Reads gridded climate NetCDF (e.g., MACA)**, extracts point time series, converts units, and assembles DSSAT-ready daily weather inputs.
-- **Writes DSSAT `.WTH` files** including **year-specific CO₂** concentrations for scenario-aware CO₂ fertilization.
-- **Generates DSSAT batch files (`DSSBatch.v48`)** and orchestrates DSSAT runs via the DSSAT command-line executable.
-- **Parses DSSAT outputs** (e.g., `Summary.OUT` and other `.OUT` files) into analysis-ready tables.
-- Includes utilities for **GHG accounting** (e.g., N₂O emissions factors) and rotation-level aggregation.
+The pipeline connects spatial soil and climate data to process-based simulations, then converts model outputs into structured regional analyses. It illustrates a practical path from heterogeneous scientific inputs to repeatable, documented computations. A future operational version would add configuration, systematic QA, tests, provenance, and validated uncertainty reporting.
 
-## Scientific context (example application)
+### Processing stages
 
-This workflow was used to run DSSAT v4.8 in a gridded spatio-temporal application (12-km grid) from 1990–2099 across multiple crop rotations and future scenarios, using a Python script to fetch/format MACA NetCDF weather at each grid point and post-process outputs.
+```text
+Gridded climate / point locations / soils / management
+    ↓  Extract and harmonize daily weather
+DSSAT weather (.WTH) + scenario-specific inputs
+    ↓  Generate batches and execute DSSAT
+Model output (.OUT)
+    ↓  Parse and organize simulation results
+Site × rotation × scenario summaries and GHG indicators
+```
 
-- DSSAT v4.8 model application: see Methods in the associated paper.
-- Grid execution and Python automation: see rotation analysis section in the paper.
+## Code currently available
 
-## Key components (modules / scripts)
+| File | Purpose | Current caveat |
+| --- | --- | --- |
+| `Process_netCDF.py` | Reads climate NetCDF, extracts location-based series, converts selected weather variables | Depends on external data-directory context; verify metadata, units and coordinate assumptions |
+| `dssat_wthfunction.py` | Builds DSSAT weather files and includes annual CO₂ values | Requires prescribed input columns and thorough date/format validation |
+| `Run_dssat_T_Github.py` | Research driver for point × climate-model × scenario DSSAT runs and output aggregation | Contains machine-specific paths and assumes locally available DSSAT and other functions/data |
+| `readDssatSummary.py` | Parses DSSAT `Summary.OUT` and converts DSSAT dates | Needs tests covering different DSSAT formats and missing records |
+| `N2Ofunction.py` | Research utility for specified N₂O / CO₂-equivalent computations | Assumptions and emissions factors require validation for each application |
 
-> Names below reflect the core building blocks in the current implementation.
+**Important:** This table reflects the files actually present. Other filenames mentioned in older versions of this README were illustrative or local variants, not published modules.
 
-### Weather pipeline
-- **NetCDF → point time series → unit conversion → RH calculation**
-  - Example logic: `Process_netCDF.py` (xarray/pandas; unit conversions; time slicing; nearest-point selection).
-- **Write DSSAT `.WTH`**
-  - `dssat_wthfunction.py` writes `.WTH` and maps CO₂ by year; includes basic TMAX/TMIN consistency checks.
+## Research application
 
-### DSSAT run orchestration
-- **Batch file generation + DSSAT CLI execution**
-  - `Run_dssat_T_modified.py` and scenario variants (e.g., RCP45) generate `DSSBatch.v48` and run:
-    `DSCSM048.EXE Q DSSBatch.v48`
+These methods support spatiotemporal simulation of crop rotations under baseline and future climates, and regional assessment of soil organic carbon (SOC), nitrous oxide (N₂O), and management trade-offs. Example scientific context:
 
-### Output parsing
-- **Summary.OUT parsing**
-  - `readDssatSummary.py` reads `Summary.OUT` into a tidy DataFrame, including DSSAT date conversion.
-- **Generic `.OUT` parsing for selected fields**
-  - `read_dssat_Arno_workingV.py` parses DSSAT output sections by run/treatment and extracts requested columns.
+- Attia et al. (2025). *Unlocking climate resilience by exploring the mitigation potential of improved rotation with cover cropping*. **Journal of Environmental Management**, 391, 126352. https://doi.org/10.1016/j.jenvman.2025.126352
 
-### Emissions utility
-- `N2Ofunction.py` implements direct + indirect N₂O estimation from N inputs and leaching, returning CO₂e if requested.
+The publication describes the scientific application. **This public repository does not include all inputs or guarantee complete reproduction of every reported result.** Please distinguish the code examples from a validated crediting/MRV workflow.
 
-## How to use (high-level)
+## Prerequisites and scope
 
-Because DSSAT binaries and large datasets are not included, this repo provides a **reference implementation** and recommended interfaces:
+- Python environment with scientific packages used by the specific script (e.g. pandas, NumPy, xarray, netCDF4, PyYAML).
+- Separately installed/licensed DSSAT, with the correct version and executable path.
+- DSSAT model files, valid soil/experiment inputs, management scenarios, CO₂ series, and appropriately licensed climate datasets.
+- Adjust script configuration and local paths before use; do **not** run the main research driver unmodified on a new machine.
 
-1. Prepare climate inputs:
-   - Select GCM / scenario / years
-   - Extract point series from NetCDF
-   - Convert units and compute derived variables (e.g., RH)
-2. Write `.WTH` files for each station/grid point (include CO₂ series)
-3. For each experiment/treatment:
-   - Patch DSSAT experiment templates (e.g., rotation sequences)
-   - Write `DSSBatch.v48`
-   - Execute DSSAT via CLI
-4. Parse outputs:
-   - Summary and detailed OUT files
-   - Aggregate by period (historical / mid-century / end-century) and by scenario
+This code has not been certified against Verra VM0042, Isometric, or any other carbon-credit methodology. Any application to crediting needs independently reviewed monitoring protocols, statistical estimators, uncertainty accounting, and verification controls.
 
-## What’s intentionally not included
-- DSSAT executables and model binaries (install separately).
-- Large climate datasets (NetCDF) and institution-specific directories.
-- Full experiment templates and calibration assets tied to specific projects.
+## Development priorities
 
-## Citation
-If you use the concepts or structure, please cite the associated publication and link back to this repository.
+See [docs/ROADMAP.md](docs/ROADMAP.md): isolate reusable functions; replace absolute paths with validated configuration; create unit and integration tests with synthetic fixtures; version DSSAT scenario configurations; check missing data and units; produce audit-traceable outputs.
 
-## Skills demonstrated (for hiring / technical review)
-- Scientific workflow engineering (reproducible pipelines, batch orchestration)
-- NetCDF/xarray processing, unit conversion, derived-variable computation
-- DSSAT automation via CLI (batch files, input templating, output parsing)
-- Data engineering with pandas (cleaning, joins, aggregation across scenarios)
-- Domain modeling: crop rotations, CO₂ scenario handling, N₂O accounting
+## Related public repositories
+
+- [NAYD R geospatial disaggregation](https://github.com/attia3/nayd) — a reproducible spatial-data processing example.
+- [SOC–N₂O ML surrogate](https://github.com/attia3/THP-SOC-N2O-ML-surrogate) — emulator of DSSAT-modeled management responses.
+
+## Author and citation
+
+Ahmed Attia. For published scientific findings, cite the associated peer-reviewed article; for code, reference the repository and the specific Git commit. Licensing terms for third-party DSSAT inputs, executables, and climate data apply separately.
 
 ## License
-Choose a license that matches your intent:
-- “All rights reserved” (if you truly do not want reuse)
-- or a standard open-source license (MIT/BSD/Apache) if you do.
+
+No open-source license is currently specified. Do not presume reuse rights until an explicit license is added.
