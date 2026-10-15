@@ -26,6 +26,7 @@ Gridded climate + soil profiles + management + locations
 | Area | Available code | Status |
 | --- | --- | --- |
 | Climate preprocessing | `src/agroecosystem_pipeline/climate.py` | New unit-aware functions; local unit tests passed |
+| Independent model evaluation | `src/agroecosystem_pipeline/evaluation.py` | Mean error, MAE, RMSE, empirical interval coverage and leave-one-group-out splits |
 | Model execution / provenance | `src/agroecosystem_pipeline/execution.py` | New dry-run-safe runner, file hashes and JSON run records; local unit tests passed |
 | NetCDF handling | `Process_netCDF.py` | Historical DSSAT-specific research script, not portable as-is |
 | Weather files | `dssat_wthfunction.py` | Historical model-format writer requiring input validation |
@@ -54,7 +55,7 @@ relative_humidity = relative_humidity_from_specific_humidity(0.01, 25.0)
 # run = execute_model(["/path/to/model", "scenario.txt"], cwd="/data/experiment")
 ```
 
-The new utilities have automated tests; **full model integrations require a licensed installation, real experiment inputs and separate validation**. An archived script is not considered a tested replacement for a published scientific workflow.
+The new utilities have 15 local unit tests; GitHub CI should independently verify the pull request. Full model integrations still require licensed simulation software. **full model integrations require a licensed installation, real experiment inputs and separate validation**. An archived script is not considered a tested replacement for a published scientific workflow.
 
 ## Scientific evidence and repositories
 
