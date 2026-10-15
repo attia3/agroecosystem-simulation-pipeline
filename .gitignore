@@ -1,0 +1,24 @@
+# Python caches / environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+# Development/editor
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# Local scientific inputs and outputs; keep small documented fixtures in tests/
+data/raw/
+data/private/
+outputs/
+runs/
+results/
+*.log
