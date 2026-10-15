@@ -1,6 +1,6 @@
-# Development roadmap — DSSAT spatial simulation pipeline
+# Development roadmap — Agroecosystem Simulation Pipeline
 
-This roadmap separates **existing research functionality** from improvements needed for a portable, maintainable workflow.
+This roadmap separates **model-specific existing research functionality** from improvements needed for a portable, maintainable workflow.
 
 ## Verified starting point
 
